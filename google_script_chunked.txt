@@ -1,0 +1,41 @@
+function doPost(e) {
+  try {
+    const name = Utilities.formatDate(new Date(), 'GMT+3', 'yyyyMMdd-HHmmss') + '.jpg';
+    const subFolderName = Utilities.formatDate(new Date(), 'GMT+3', 'yyyyMMdd');
+    const folderName = e.parameter.folder || 'ESP32-CAM';
+
+    // Debug log (view via View > Executions or View > Logs)
+    Logger.log("📥 Image upload started");
+    Logger.log("Parameters: " + JSON.stringify(e.parameter));
+
+    const data = Utilities.base64Decode(e.parameter.image);
+    const blob = Utilities.newBlob(data, 'image/jpeg', name);
+
+    // Find or create main folder
+    let folder;
+    const folders = DriveApp.getFoldersByName(folderName);
+    if (folders.hasNext()) {
+      folder = folders.next();
+    } else {
+      folder = DriveApp.createFolder(folderName);
+    }
+
+    // Find or create subfolder by date
+    let subFolder;
+    const subFolders = folder.getFoldersByName(subFolderName);
+    if (subFolders.hasNext()) {
+      subFolder = subFolders.next();
+    } else {
+      subFolder = folder.createFolder(subFolderName);
+    }
+
+    // Save file to Drive
+    const file = subFolder.createFile(blob);
+    Logger.log("✅ Image saved: " + file.getName());
+
+    return ContentService.createTextOutput("✅ Image saved as " + file.getName());
+  } catch (err) {
+    Logger.log("❌ Error: " + err.toString());
+    return ContentService.createTextOutput("❌ Error: " + err.toString());
+  }
+}
