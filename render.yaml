@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: esp32-proxy
-    env: python
-    plan: free
-    buildCommand: ""
-    startCommand: python main.py
